@@ -178,15 +178,15 @@ header p { font-size: 12px; color: #8e9999; margin: 6px 0 0; }
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* 保存失败 / 重试中的常驻提示 */
+/* 保存失败 / 重试中的常驻提示（位于通知栈内，位置由栈决定） */
 .save-alert {
-  position: fixed; right: 18px; bottom: 18px; z-index: 55;
   display: flex; align-items: center; gap: 9px;
   background: #fdf3e7; border: 1px solid #ecd9c3; color: #8d5a2b;
   border-radius: 9px; padding: 10px 13px; font-size: 11px;
   box-shadow: 0 8px 24px #8d5a2b22;
   animation: toast-in .18s ease;
 }
+.save-alert > span { flex: 1; }
 .save-alert-retry {
   border: 0; background: #b37b57; color: #fff; font-weight: 600;
   border-radius: 6px; padding: 5px 12px; font-size: 11px; cursor: pointer; white-space: nowrap;
@@ -257,15 +257,21 @@ header p { font-size: 12px; color: #8e9999; margin: 6px 0 0; }
 .radio.on { border-color: #b37b57; background: #f7ece4; color: #8d6042; font-weight: 600; }
 .import-note { font-size: 11px; color: #748081; background: #f4f6f3; border-radius: 7px; padding: 9px 12px; margin: 4px 0 0; }
 
-/* ---------- Toast ---------- */
+/* ---------- 通知栈：toast 在上、常驻保存提示在下，任何尺寸不重叠 ---------- */
+.notify-stack {
+  position: fixed; right: 18px; bottom: 18px; z-index: 60;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+  pointer-events: none; max-width: calc(100vw - 32px);
+}
+.notify-stack > * { pointer-events: auto; }
 .toast {
-  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
   background: #27393b; color: #e8efec; border-radius: 9px; padding: 11px 14px;
   display: flex; align-items: center; gap: 13px; font-size: 12px;
-  box-shadow: 0 10px 30px #1d2b2a55; z-index: 60; max-width: calc(100vw - 32px);
+  box-shadow: 0 10px 30px #1d2b2a55; max-width: calc(100vw - 32px);
   animation: toast-in .18s ease;
 }
-@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.toast > span:first-child { flex: 1; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .toast-action {
   border: 0; background: #c98d66; color: #fff; font-weight: 600;
   border-radius: 6px; padding: 5px 12px; font-size: 11px; cursor: pointer; white-space: nowrap;
@@ -297,6 +303,6 @@ header p { font-size: 12px; color: #8e9999; margin: 6px 0 0; }
   .font-row, .range-row { grid-template-columns: 1fr; }
   .canvas { padding: 8px; }
   .conflict-list li { flex-direction: column; align-items: flex-start; }
-  .toast { bottom: 14px; font-size: 11px; }
-  .save-alert { right: 12px; left: 12px; bottom: 12px; justify-content: center; }
+  .toast { font-size: 11px; }
+  .notify-stack { left: 12px; right: 12px; bottom: 12px; align-items: stretch; }
 }

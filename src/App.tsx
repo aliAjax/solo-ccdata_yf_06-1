@@ -256,17 +256,21 @@ export default function App() {
         />
       )}
 
-      {toast && <Toast toast={toast} onDismiss={library.dismissToast} />}
-
-      {/* 保存失败 / 重试中的常驻提示：toast 消失后依然可见，直到恢复保存 */}
-      {library.saveState !== 'saved' && (
-        <div className="save-alert" role="alert">
-          <AlertTriangle size={14} />
-          <span>{library.saveState === 'retrying' ? '正在重试保存…' : '有改动未保存到本地'}</span>
-          {library.saveState === 'error' && (
-            <button className="save-alert-retry" onClick={library.retrySave}>
-              重试
-            </button>
+      {/* 通知栈：toast（ transient ）在上，保存失败/重试常驻提示在下，
+          纵向排列保证任何尺寸下都不重叠 */}
+      {(toast || library.saveState !== 'saved') && (
+        <div className="notify-stack">
+          {toast && <Toast toast={toast} onDismiss={library.dismissToast} />}
+          {library.saveState !== 'saved' && (
+            <div className="save-alert" role="alert">
+              <AlertTriangle size={14} />
+              <span>{library.saveState === 'retrying' ? '正在重试保存…' : '有改动未保存到本地'}</span>
+              {library.saveState === 'error' && (
+                <button className="save-alert-retry" onClick={library.retrySave}>
+                  重试
+                </button>
+              )}
+            </div>
           )}
         </div>
       )}
