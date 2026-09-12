@@ -45,8 +45,10 @@ export function useLibrary(): LibraryState {
   });
   const [pairs, setPairs] = useState<Pair[]>(() => {
     const { loaded, now } = initial;
-    if (loaded.pairs.length > 0 || loaded.corrupted) return loaded.pairs;
-    return seedPairs(now);
+    // 示例只在首次启动（存储中无任何记录）时出现；
+    // 用户清空的空库、损坏恢复后的空库，刷新后都保持为空
+    if (loaded.firstRun) return seedPairs(now);
+    return loaded.pairs;
   });
   const [undoStack, setUndoStack] = useState<UndoEntry[]>([]);
   // ref 镜像：toast 里的「撤销」闭包可能跨多次渲染被点击，必须读到最新栈
@@ -68,7 +70,7 @@ export function useLibrary(): LibraryState {
       showToast('本地数据已损坏，已恢复为可用状态（原数据已备份）');
       corruptedRef.current = false;
     } else if (droppedRef.current > 0) {
-      showToast(`有 ${droppedRef.current} 条本地记录格式异常，已被忽略`);
+      showToast(`有 ${droppedRef.current} 条本地记录格式异常，已被忽略（原始数据已备份）`);
       droppedRef.current = 0;
     }
   }, [showToast]);
