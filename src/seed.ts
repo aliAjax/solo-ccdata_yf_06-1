@@ -1,0 +1,55 @@
+import type { Pair } from './types';
+
+/** 首次启动（空库）时的示例方案 */
+export function seedPairs(now: number): Pair[] {
+  return [
+    {
+      id: 'seed-editorial-calm',
+      title: 'Editorial calm',
+      heading: 'A slower way to see',
+      body: 'Good typography creates space for ideas to breathe. Pair a confident display face with a quiet, generous text face.',
+      category: 'Editorial',
+      favorite: true,
+      headingFont: 'Fraunces',
+      bodyFont: 'DM Sans',
+      size: 46,
+      weight: 600,
+      leading: 1.25,
+      tracking: 0,
+      createdAt: now - 3000,
+      updatedAt: now - 3000,
+    },
+    {
+      id: 'seed-studio-notes',
+      title: 'Studio notes',
+      heading: 'Make room for the unexpected',
+      body: 'A thoughtful pairing can add rhythm to even the simplest interface. Try contrast in shape, not just size.',
+      category: 'Portfolio',
+      favorite: false,
+      headingFont: 'Space Grotesk',
+      bodyFont: 'IBM Plex Sans',
+      size: 40,
+      weight: 500,
+      leading: 1.5,
+      tracking: 0.5,
+      createdAt: now - 2000,
+      updatedAt: now - 2000,
+    },
+    {
+      id: 'seed-field-guide',
+      title: 'Field guide',
+      heading: 'Small details, lasting impressions',
+      body: 'Typography is the voice of a page. Find a combination that feels clear, warm and distinctly yours.',
+      category: 'Brand',
+      favorite: false,
+      headingFont: 'Playfair Display',
+      bodyFont: 'Newsreader',
+      size: 52,
+      weight: 700,
+      leading: 1.4,
+      tracking: -0.5,
+      createdAt: now - 1000,
+      updatedAt: now - 1000,
+    },
+  ];
+}
