@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Download, Grid3X3, LibraryBig, Plus, SearchX, Upload } from 'lucide-react';
+import { AlertTriangle, Download, Grid3X3, LibraryBig, Plus, SearchX, Upload } from 'lucide-react';
 import type { ConflictResolution, FilterState, ImportParseResult, Pair } from './types';
 import { categoriesOf, exportJson, filterPairs, parseImport } from './lib/library';
 import { useLibrary } from './hooks/useLibrary';
@@ -201,10 +201,12 @@ export default function App() {
           {current ? (
             <Studio
               pair={current}
+              saveState={library.saveState}
               onUpdateType={patch => library.updateType(current.id, patch)}
               onToggleFavorite={() => library.toggleFavorite(current.id)}
               onRemove={() => library.removePair(current.id)}
               onCopyCss={handleCopyCss}
+              onRetrySave={library.retrySave}
             />
           ) : (
             <section className="studio studio-empty">
@@ -226,7 +228,7 @@ export default function App() {
           onSubmit={values => {
             if (editor.pair) {
               library.editPair(editor.pair.id, values);
-              library.notify('已保存修改');
+              library.notify('已更新方案');
             } else {
               const created = library.createPair(values);
               setSelectedId(created.id);
@@ -255,6 +257,19 @@ export default function App() {
       )}
 
       {toast && <Toast toast={toast} onDismiss={library.dismissToast} />}
+
+      {/* 保存失败 / 重试中的常驻提示：toast 消失后依然可见，直到恢复保存 */}
+      {library.saveState !== 'saved' && (
+        <div className="save-alert" role="alert">
+          <AlertTriangle size={14} />
+          <span>{library.saveState === 'retrying' ? '正在重试保存…' : '有改动未保存到本地'}</span>
+          {library.saveState === 'error' && (
+            <button className="save-alert-retry" onClick={library.retrySave}>
+              重试
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

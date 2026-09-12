@@ -172,6 +172,26 @@ header p { font-size: 12px; color: #8e9999; margin: 6px 0 0; }
 .foot-actions { display: flex; align-items: center; gap: 8px; }
 .save { border: 0; background: #ecf5ee; color: #63926d; border-radius: 6px; padding: 7px 10px; font-size: 10px; display: flex; align-items: center; gap: 6px; }
 .check { font-size: 12px; }
+.save.save-error { background: #faf0ea; color: #a05a3c; cursor: pointer; }
+.save.save-error:hover { background: #f5e3d8; }
+.save.save-pending { background: #f4f4ef; color: #8b9695; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 保存失败 / 重试中的常驻提示 */
+.save-alert {
+  position: fixed; right: 18px; bottom: 18px; z-index: 55;
+  display: flex; align-items: center; gap: 9px;
+  background: #fdf3e7; border: 1px solid #ecd9c3; color: #8d5a2b;
+  border-radius: 9px; padding: 10px 13px; font-size: 11px;
+  box-shadow: 0 8px 24px #8d5a2b22;
+  animation: toast-in .18s ease;
+}
+.save-alert-retry {
+  border: 0; background: #b37b57; color: #fff; font-weight: 600;
+  border-radius: 6px; padding: 5px 12px; font-size: 11px; cursor: pointer; white-space: nowrap;
+}
+.save-alert-retry:hover { background: #a26c49; }
 
 /* ---------- 弹窗 ---------- */
 .backdrop { position: fixed; inset: 0; background: #263b3b44; display: grid; place-items: center; padding: 20px; z-index: 40; }
@@ -278,4 +298,5 @@ header p { font-size: 12px; color: #8e9999; margin: 6px 0 0; }
   .canvas { padding: 8px; }
   .conflict-list li { flex-direction: column; align-items: flex-start; }
   .toast { bottom: 14px; font-size: 11px; }
+  .save-alert { right: 12px; left: 12px; bottom: 12px; justify-content: center; }
 }

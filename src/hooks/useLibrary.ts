@@ -13,11 +13,16 @@ interface UndoEntry {
 const UNDO_LIMIT = 20;
 const TOAST_DURATION = 5200;
 
+/** 保存状态：saved 已写入 / retrying 重试中 / error 写入失败（有待保存改动） */
+export type SaveState = 'saved' | 'retrying' | 'error';
+
 export interface LibraryState {
   pairs: Pair[];
   toast: ToastData | null;
   canUndo: boolean;
+  saveState: SaveState;
   notify: (message: string) => void;
+  retrySave: () => void;
   createPair: (input: { title: string; category: string; heading: string; body: string }) => Pair;
   editPair: (id: string, patch: { title?: string; category?: string; heading?: string; body?: string }) => void;
   updateType: (id: string, patch: Partial<TypeSettings>) => void;
@@ -57,6 +62,10 @@ export function useLibrary(): LibraryState {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const corruptedRef = useRef(initial.loaded.corrupted);
   const droppedRef = useRef(initial.loaded.dropped);
+  const [saveState, setSaveState] = useState<SaveState>('saved');
+  // ref 镜像：持久化 effect / 重试闭包需要读到最新状态与最新 pairs
+  const saveStateRef = useRef<SaveState>('saved');
+  const pairsRef = useRef<Pair[]>(pairs);
 
   const showToast = useCallback((message: string, action?: ToastData['action']) => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -75,10 +84,43 @@ export function useLibrary(): LibraryState {
     }
   }, [showToast]);
 
-  // 持久化：任何变更都写回 localStorage
+  // 手动重试保存：状态机 saved → retrying → saved|error，绝不把失败写成成功
+  const retrySave = useCallback(async () => {
+    if (saveStateRef.current === 'retrying') return;
+    saveStateRef.current = 'retrying';
+    setSaveState('retrying');
+    // 让「重试中」状态先渲染，再执行同步写入
+    await new Promise(resolve => setTimeout(resolve, 350));
+    const ok = saveLibrary(pairsRef.current);
+    if (ok) {
+      saveStateRef.current = 'saved';
+      setSaveState('saved');
+      showToast('已重新保存，所有改动已写入本地');
+    } else {
+      saveStateRef.current = 'error';
+      setSaveState('error');
+      showToast('仍然无法写入本地存储，请检查存储空间或浏览器权限');
+    }
+  }, [showToast]);
+
+  // 持久化：任何变更（增删改、字体调整）都真实写回 localStorage，结果反映到界面。
+  // 失败只在「进入失败态」时提示一次；处于失败态时的每次变更仍会尝试写入，
+  // 一旦成功即自动恢复并提示。
   useEffect(() => {
-    saveLibrary(pairs);
-  }, [pairs]);
+    pairsRef.current = pairs;
+    const ok = saveLibrary(pairs);
+    if (ok) {
+      if (saveStateRef.current === 'error') showToast('已恢复保存，改动已写入本地');
+      saveStateRef.current = 'saved';
+      setSaveState('saved');
+    } else {
+      if (saveStateRef.current !== 'error') {
+        showToast('改动未能写入本地存储（空间不足或权限受限）', { label: '重试', onClick: () => void retrySave() });
+      }
+      saveStateRef.current = 'error';
+      setSaveState('error');
+    }
+  }, [pairs, showToast, retrySave]);
 
   const dismissToast = useCallback(() => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -231,7 +273,9 @@ export function useLibrary(): LibraryState {
       pairs,
       toast,
       canUndo: undoStack.length > 0,
+      saveState,
       notify: showToast,
+      retrySave: () => void retrySave(),
       createPair,
       editPair,
       updateType,
@@ -248,7 +292,9 @@ export function useLibrary(): LibraryState {
       pairs,
       toast,
       undoStack.length,
+      saveState,
       showToast,
+      retrySave,
       createPair,
       editPair,
       updateType,

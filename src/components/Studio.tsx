@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Copy, SlidersHorizontal, Star, Trash2 } from 'lucide-react';
+import { AlertTriangle, Copy, Loader2, SlidersHorizontal, Star, Trash2 } from 'lucide-react';
 import type { Pair, TypeSettings } from '../types';
+import type { SaveState } from '../hooks/useLibrary';
 import { FONTS, LIMITS } from '../types';
 
 type Device = 'desktop' | 'tablet' | 'mobile';
@@ -13,13 +14,15 @@ const DEVICE_WIDTHS: Record<Device, string> = {
 
 interface StudioProps {
   pair: Pair;
+  saveState: SaveState;
   onUpdateType: (patch: Partial<TypeSettings>) => void;
   onToggleFavorite: () => void;
   onRemove: () => void;
   onCopyCss: () => void;
+  onRetrySave: () => void;
 }
 
-export function Studio({ pair, onUpdateType, onToggleFavorite, onRemove, onCopyCss }: StudioProps) {
+export function Studio({ pair, saveState, onUpdateType, onToggleFavorite, onRemove, onCopyCss, onRetrySave }: StudioProps) {
   const [device, setDevice] = useState<Device>('desktop');
   return (
     <section className="studio">
@@ -159,9 +162,21 @@ export function Studio({ pair, onUpdateType, onToggleFavorite, onRemove, onCopyC
             <Copy size={14} />
             复制 CSS
           </button>
-          <span className="save">
-            <span className="check">✓</span> 已自动保存
-          </span>
+          {saveState === 'error' ? (
+            <button className="save save-error" onClick={onRetrySave}>
+              <AlertTriangle size={12} />
+              未保存 · 点击重试
+            </button>
+          ) : saveState === 'retrying' ? (
+            <span className="save save-pending">
+              <Loader2 size={12} className="spin" />
+              正在重试…
+            </span>
+          ) : (
+            <span className="save">
+              <span className="check">✓</span> 已自动保存
+            </span>
+          )}
         </div>
       </div>
     </section>
